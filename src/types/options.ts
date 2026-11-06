@@ -43,6 +43,9 @@ export interface WidgetOptions
   username?: string;
   transformUsername?: (username: string, operation: UserOperation) => string;
   processCreds?: (creds: Creds, callback?: SimpleCallback) => void;
+  // Phone number country
+  defaultCountryCode?: string;
+  supportedCountryCodes?: string[];
   // Language and text
   language?: LanguageCode | LanguageCallback | string;
   i18n?: any; // TODO

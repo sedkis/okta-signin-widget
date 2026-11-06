@@ -199,7 +199,7 @@ export default FormController.extend({
         name: 'countryCode',
         type: 'select',
         wide: true,
-        options: CountryUtil.getCountries(),
+        options: this.settings.get('countries'),
       }),
       FormType.Input({
         label: loc('mfa.phoneNumber.placeholder', 'login'),

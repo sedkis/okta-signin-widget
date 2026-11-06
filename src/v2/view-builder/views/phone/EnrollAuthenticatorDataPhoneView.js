@@ -44,7 +44,7 @@ const Body = BaseForm.extend({
       'label-top': true,
       label: loc('mfa.country', 'login'),
       type: 'select',
-      options: CountryUtil.getCountries(),
+      options: this.settings.get('countries'),
       name: 'country',
       wide: true,
     };
@@ -120,7 +120,7 @@ export default BaseAuthenticatorView.extend({
     const local = Object.assign(
       {
         country: {
-          'value': this.settings.get('defaultCountryCode'),
+          'value': this.settings.get('countryCode'),
           'type': 'string',
         },
         extension: {

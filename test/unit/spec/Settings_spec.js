@@ -194,6 +194,40 @@ describe('models/Settings', () => {
     });
   });
 
+  describe('countryCode and countries', () => {
+    const create = (options = {}) => new Settings({ baseUrl: 'http://base', ...options });
+
+    it('defaults to all countries and "US"', () => {
+      const settings = create();
+      expect(Object.keys(settings.get('countries')).length).toBeGreaterThan(200);
+      expect(settings.get('countryCode')).toBe('US');
+    });
+    it('uses defaultCountryCode when it is valid', () => {
+      expect(create({ defaultCountryCode: 'GB' }).get('countryCode')).toBe('GB');
+    });
+    it('falls back to "US" when defaultCountryCode is invalid', () => {
+      expect(create({ defaultCountryCode: 'FAKECODE' }).get('countryCode')).toBe('US');
+    });
+    it('restricts countries to supportedCountryCodes', () => {
+      const settings = create({ supportedCountryCodes: ['us', 'CA', 'FAKECODE'] });
+      expect(Object.keys(settings.get('countries'))).toEqual(['CA', 'US']);
+      expect(settings.get('countryCode')).toBe('US');
+    });
+    it('shows all countries when none of supportedCountryCodes are valid', () => {
+      const settings = create({ supportedCountryCodes: ['FAKECODE'] });
+      expect(Object.keys(settings.get('countries')).length).toBeGreaterThan(200);
+    });
+    it('uses defaultCountryCode when it is supported', () => {
+      expect(create({ supportedCountryCodes: ['US', 'CA'], defaultCountryCode: 'CA' }).get('countryCode')).toBe('CA');
+    });
+    it('falls back to "US" when defaultCountryCode is not supported', () => {
+      expect(create({ supportedCountryCodes: ['US', 'CA'], defaultCountryCode: 'GB' }).get('countryCode')).toBe('US');
+    });
+    it('falls back to the first supported country when neither defaultCountryCode nor "US" are supported', () => {
+      expect(create({ supportedCountryCodes: ['GB', 'FR'], defaultCountryCode: 'DE' }).get('countryCode')).toBe('FR');
+    });
+  });
+
   describe('backToSignInUri', () => {
     it('can be set using `signOutLink`', () => {
       const settings = new Settings({ baseUrl: 'http://base', signOutLink: 'http://foo' });
