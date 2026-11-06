@@ -34,11 +34,17 @@ describe('util/retryNetworkErrors', () => {
       expect(isTransientNetworkError({ status: 500, responseText: 'Failed to fetch' })).toBe(false);
     });
 
+    it('returns false when reading a received response body fails', () => {
+      expect(isTransientNetworkError(new TypeError('network error'))).toBe(false);
+      expect(isTransientNetworkError(new TypeError('Error in body stream'))).toBe(false);
+    });
+
     it('returns false for aborted requests and other errors', () => {
       const abort = new Error('The user aborted a request.');
       abort.name = 'AbortError';
       expect(isTransientNetworkError(abort)).toBe(false);
       expect(isTransientNetworkError(new Error('boom'))).toBe(false);
+      expect(isTransientNetworkError(new TypeError('Cannot read properties of undefined'))).toBe(false);
       expect(isTransientNetworkError(undefined)).toBe(false);
     });
   });

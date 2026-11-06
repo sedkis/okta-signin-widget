@@ -24,7 +24,8 @@ export const NETWORK_ERROR_RETRY_DELAY_MS = 300;
 /**
  * True when `fetch` itself rejected (e.g. Chrome `net::ERR_HTTP2_PROTOCOL_ERROR`,
  * connection reset) and no HTTP response was received. HTTP error responses
- * (4xx/5xx) and aborted requests are not considered transient network errors.
+ * (4xx/5xx), aborted requests and failures while reading a received response body
+ * (e.g. Chrome's "network error") are not retried: the server may have processed them.
  */
 export function isTransientNetworkError(error: unknown): boolean {
   if (!error || typeof error !== 'object') {
@@ -34,7 +35,7 @@ export function isTransientNetworkError(error: unknown): boolean {
   if (typeof status === 'number' || name === 'AbortError') {
     return false;
   }
-  return name === 'TypeError' || isNetworkErrorMessage(message);
+  return isNetworkErrorMessage(message);
 }
 
 export function isNetworkErrorMessage(message: unknown): boolean {
