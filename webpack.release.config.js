@@ -16,6 +16,10 @@
 
 // 7. debugger - okta-sign-in.debugger.min.js
 
+// Source maps for these bundles are generated as "hidden" source maps (no `sourceMappingURL` comment) so that
+// they can be uploaded to Sentry without being referenced by, or published alongside, the CDN bundles.
+// Set OKTA_SIW_PUBLIC_SOURCEMAPS=true to restore publicly referenced source maps.
+
 var path = require('path');
 var config  = require('./webpack.common.config');
 var plugins = require('./scripts/buildtools/webpack/plugins');
@@ -23,6 +27,7 @@ var useRuntime = require('./scripts/buildtools/webpack/runtime');
 var usePolyfill = require('./scripts/buildtools/webpack/polyfill');
 
 var TARGET_DIR = path.resolve(__dirname, 'target');
+var PUBLIC_SOURCEMAPS = process.env.OKTA_SIW_PUBLIC_SOURCEMAPS === 'true';
 var DEFAULT_ENTRIES = {
   // 1. default (default entry, minified, with polyfill)
   'default': {
@@ -116,6 +121,10 @@ const configs = Object.keys(entries).map(entryName => {
     engine,
     useBuiltIns,
   });
+
+  if (entryName !== 'css' && !PUBLIC_SOURCEMAPS) {
+    entryConfig.devtool = 'hidden-source-map';
+  }
 
   entryConfig.plugins = plugins({ 
     isProduction: true, 
