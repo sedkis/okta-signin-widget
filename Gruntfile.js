@@ -18,6 +18,10 @@ module.exports = function(grunt) {
       // Note: 3000 is necessary to test against certain browsers in SauceLabs
       DEFAULT_SERVER_PORT   = 3000;
 
+  // Source maps of the minified/CDN bundles built by webpack.release.config.js and src/v3/webpack.release.config.ts
+  var RELEASE_SOURCEMAPS = ['*.min.js.map', 'okta-sign-in.next*.js.map', 'okta-plugin-a11y.js.map'],
+      PUBLIC_SOURCEMAPS  = process.env.OKTA_SIW_PUBLIC_SOURCEMAPS === 'true';
+
   var mockDuo = grunt.option('env.mockDuo');
   var buildAllBundles = grunt.option('buildAllBundles');
 
@@ -82,14 +86,28 @@ module.exports = function(grunt) {
           {
             expand: true,
             cwd: JS,
-            src: ['okta-plugin*', 'okta-sign-in*', '!*.html', '!*.txt'],
+            src: [
+              'okta-plugin*',
+              'okta-sign-in*',
+              '!*.html',
+              '!*.txt',
+              // source maps of the minified/CDN bundles are kept in target/js for Sentry, but not published
+              ...(PUBLIC_SOURCEMAPS ? [] : RELEASE_SOURCEMAPS.map(glob => `!${glob}`)),
+            ],
             dest: DIST + '/js'
           },
           {
             expand: true,
             cwd: 'target/css',
             // copy minified stylesheet and its sourcemap only
-            src: ['*.css', '*.css.map', '!okta-sign-in.css', '!okta-sign-in.css.map'],
+            src: [
+              '*.css',
+              '*.css.map',
+              '!okta-sign-in.css',
+              '!okta-sign-in.css.map',
+              // Gen3 release css map is hidden (see src/v3/webpack.release.config.ts), so it is not published either
+              ...(PUBLIC_SOURCEMAPS ? [] : ['!okta-sign-in.next.css.map']),
+            ],
             dest: DIST + '/css',
           },
           {

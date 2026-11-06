@@ -399,7 +399,7 @@ After installing:
     var signIn = new OktaSignIn(/* configOptions */);
     ```
 
-    Source maps are provided as an external .map file. If you are using [Webpack](https://webpack.github.io/), these can be loaded using the [source-map-loader](https://github.com/webpack-contrib/source-map-loader) plugin.
+    Source maps are provided as an external .map file. If you are using [Webpack](https://webpack.github.io/), these can be loaded using the [source-map-loader](https://github.com/webpack-contrib/source-map-loader) plugin. Source maps are not published for the minified CDN bundles (e.g. `okta-sign-in.min.js`, `okta-sign-in.next.js`).
 
     If you want to include widget styles in bundle using [style-loader](https://webpack.js.org/loaders/style-loader/) or [mini-css-extract-plugin](https://github.com/webpack-contrib/mini-css-extract-plugin), use the following import:
 

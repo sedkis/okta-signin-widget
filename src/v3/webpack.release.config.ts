@@ -26,7 +26,9 @@ const prodConfig: Configuration = merge<Partial<Configuration>>(
   baseConfig,
   {
     mode: 'production',
-    devtool: 'source-map',
+    // Hidden source maps (no `sourceMappingURL` comment) are uploaded to Sentry but not published.
+    // Set OKTA_SIW_PUBLIC_SOURCEMAPS=true to restore publicly referenced source maps.
+    devtool: process.env.OKTA_SIW_PUBLIC_SOURCEMAPS === 'true' ? 'source-map' : 'hidden-source-map',
     entry: {
       default: {
         import: [
