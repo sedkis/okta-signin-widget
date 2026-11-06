@@ -10,7 +10,9 @@
  * See the License for the specific language governing permissions and limitations under the License.
  */
 
-import { IdxActionParams, IdxTransaction, NextStep } from '@okta/okta-auth-js';
+import {
+  AuthApiError, IdxActionParams, IdxTransaction, NextStep,
+} from '@okta/okta-auth-js';
 import cloneDeep from 'lodash/cloneDeep';
 import {
   MutableRef, useEffect, useMemo, useRef, useState,
@@ -58,6 +60,13 @@ const getAutoChallengeValue = (
 };
 
 // returns polling transaction or undefined
+// A request that never got an HTTP response (e.g. "Failed to fetch" while offline).
+// auth-js converts any HTTP error response into an IdxTransaction, so a thrown
+// AuthApiError without `xhr` (or a raw TypeError from fetch) is a network failure.
+const isNetworkError = (error: unknown): boolean => (
+  (error instanceof AuthApiError && !error.xhr) || error instanceof TypeError
+);
+
 export const usePolling = (
   idxTransaction: IdxTransaction | undefined,
   widgetProps: Partial<WidgetOptions>,
@@ -165,12 +174,17 @@ export const usePolling = (
         });
         setTransaction(newTransaction);
       } catch (e) {
-        // re-thrown below so existing behavior is unchanged
         fastpassPollingLog('poll proceed threw', {
           name,
           error: (e as Error)?.message,
         });
-        throw e;
+        if (!isNetworkError(e)) {
+          throw e;
+        }
+        // Keep polling on the same interval instead of letting the polling chain die
+        // (okta/okta-signin-widget#3935)
+        fastpassPollingLog('poll failed with transient error, rescheduling', { name, refresh });
+        setTransaction(cloneDeep(transaction ?? idxTransaction));
       } finally {
         if (guarded && pollInFlightRef) {
           // eslint-disable-next-line no-param-reassign

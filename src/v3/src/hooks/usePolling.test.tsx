@@ -10,8 +10,10 @@
  * See the License for the specific language governing permissions and limitations under the License.
  */
 
-import { IdxTransaction, NextStep, OktaAuth } from '@okta/okta-auth-js';
-import { waitFor } from '@testing-library/preact';
+import {
+  AuthApiError, AuthSdkError, IdxTransaction, NextStep, OktaAuth,
+} from '@okta/okta-auth-js';
+import { act, waitFor } from '@testing-library/preact';
 import { renderHook } from '@testing-library/preact-hooks';
 import { MutableRef } from 'preact/hooks';
 import { WidgetProps } from 'src/types';
@@ -227,6 +229,78 @@ describe('usePolling', () => {
       // expect to setup timer
       expect(setTimeout).toHaveBeenCalledTimes(1);
       expect(setTimeout).toHaveBeenCalledWith(expect.any(Function), 4000);
+    });
+  });
+
+  describe('poll request failures (okta/okta-signin-widget#3935)', () => {
+    const idxTransaction = {
+      nextStep: {
+        name: 'challenge-poll',
+        refresh: 4000,
+      },
+    } as unknown as IdxTransaction;
+
+    const firePoll = async () => {
+      await act(async () => {
+        jest.advanceTimersByTime(4000);
+        // flush the proceed() promise so the re-render happens inside act
+        await Promise.resolve();
+      });
+      await act(async () => {
+        await Promise.resolve();
+      });
+    };
+
+    it('keeps polling after a network error such as "Failed to fetch"', async () => {
+      mockProceedFn
+        .mockRejectedValueOnce(new AuthApiError({ errorSummary: 'Failed to fetch' }))
+        .mockResolvedValue({
+          nextStep: { name: 'challenge-poll', refresh: 4000 },
+        });
+      renderHook(() => usePolling(idxTransaction, mockProps, mockData));
+
+      // 1st poll fails with a network error
+      await firePoll();
+      expect(mockProceedFn).toHaveBeenCalledTimes(1);
+
+      // next poll is rescheduled on the same interval
+      expect(setTimeout).toHaveBeenLastCalledWith(expect.any(Function), 4000);
+      await firePoll();
+      expect(mockProceedFn).toHaveBeenCalledTimes(2);
+    });
+
+    it('resumes polling after consecutive network errors once connectivity returns', async () => {
+      mockProceedFn
+        .mockRejectedValueOnce(new TypeError('Failed to fetch'))
+        .mockRejectedValueOnce(new TypeError('Failed to fetch'))
+        .mockResolvedValue({
+          nextStep: { name: 'challenge-poll', refresh: 4000 },
+        });
+      const { result } = renderHook(() => usePolling(idxTransaction, mockProps, mockData));
+
+      await firePoll();
+      await firePoll();
+      await firePoll();
+
+      expect(mockProceedFn).toHaveBeenCalledTimes(3);
+      expect(result.current).toMatchObject({
+        nextStep: { name: 'challenge-poll', refresh: 4000 },
+      });
+    });
+
+    it('does not reschedule polling on a non-transient AuthSdkError', async () => {
+      const error = new AuthSdkError('Unable to proceed: saved transaction could not be loaded');
+      mockProceedFn.mockRejectedValueOnce(error);
+      renderHook(() => usePolling(idxTransaction, mockProps, mockData));
+
+      expect(setTimeout).toHaveBeenCalledTimes(1);
+      const pollTick = (setTimeout as unknown as jest.Mock).mock.calls[0][0] as () => Promise<void>;
+      await act(async () => {
+        await expect(pollTick()).rejects.toBe(error);
+      });
+
+      expect(mockProceedFn).toHaveBeenCalledTimes(1);
+      expect(setTimeout).toHaveBeenCalledTimes(1);
     });
   });
 
