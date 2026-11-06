@@ -232,6 +232,7 @@ const sectionTitleTemplate = _Handlebars2.template({
   "useData": true
 });
 
+const SAVING_READONLY_SELECTOR = 'textarea, input:not([type="checkbox"], [type="radio"], [type="button"], ' + '[type="submit"], [type="reset"], [type="file"], [type="image"], [type="range"], [type="color"])';
 const pointerEventsSupported = oktaJQueryStatic('<div>').css({
   'pointer-events': 'auto'
 })[0].style.pointerEvents === 'auto'; // polyfill for `pointer-events: none;` in IE < 11
@@ -783,6 +784,8 @@ var BaseForm = BaseView.extend(
   __setSavingState: function () {
     this.model.trigger('form:set-saving-state');
     this.$el.addClass('o-form-saving');
+
+    this.__lockInputsForSaving();
   },
 
   /**
@@ -793,6 +796,57 @@ var BaseForm = BaseView.extend(
   __clearSavingState: function () {
     this.model.trigger('form:clear-saving-state');
     this.$el.removeClass('o-form-saving');
+
+    this.__unlockInputsForSaving();
+  },
+
+  /**
+   * `o-form-saving` only blocks pointer interaction, so make the form inputs genuinely non-editable
+   * while saving: text fields become readonly (keeping focus where the user is) and other controls
+   * (checkboxes, radios, selects, buttons) are disabled. Only controls changed here are restored.
+   * @private
+   */
+  __lockInputsForSaving: function () {
+    if (this.__savingLock) {
+      return;
+    }
+
+    const $controls = this.$('.o-form-input').find(':input').not('[type="hidden"]');
+    const $textInputs = $controls.filter(SAVING_READONLY_SELECTOR).not('[readonly], :disabled');
+    const $otherInputs = $controls.not(SAVING_READONLY_SELECTOR).not(':disabled');
+    const activeElement = document.activeElement;
+
+    $textInputs.prop('readOnly', true);
+    $otherInputs.prop('disabled', true);
+    $otherInputs.filter('select').trigger('liszt:updated');
+
+    this.__savingLock = {
+      $textInputs,
+      $otherInputs,
+      focused: $otherInputs.is(activeElement) ? activeElement : null
+    };
+  },
+
+  /**
+   * Restores the inputs changed by `__lockInputsForSaving`.
+   * @private
+   */
+  __unlockInputsForSaving: function () {
+    const lock = this.__savingLock;
+
+    if (!lock) {
+      return;
+    }
+
+    this.__savingLock = null;
+    lock.$textInputs.prop('readOnly', false);
+    lock.$otherInputs.prop('disabled', false);
+    lock.$otherInputs.filter('select').trigger('liszt:updated');
+    const activeElement = document.activeElement;
+
+    if (lock.focused && document.contains(lock.focused) && (!activeElement || activeElement === document.body)) {
+      lock.focused.focus();
+    }
   },
 
   /**
