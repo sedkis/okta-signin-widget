@@ -126,8 +126,17 @@ const ReminderPrompt: UISchemaElementComponent<{
         />
       );
     }
+    return parsedContent;
+  };
+
+  const renderContent = () => {
+    const actionLink = renderActionLink();
     return (
-      <Box marginBlockEnd={tokens.Spacing2}>{parsedContent}</Box>
+      <Box>
+        {renderAlertContent()}
+        {actionLink && ' '}
+        {actionLink}
+      </Box>
     );
   };
 
@@ -147,8 +156,7 @@ const ReminderPrompt: UISchemaElementComponent<{
             // visually-hidden severity text is not translated
             translate="no"
           >
-            {renderAlertContent()}
-            {renderActionLink()}
+            {renderContent()}
           </Callout>
         </Box>
       )}
