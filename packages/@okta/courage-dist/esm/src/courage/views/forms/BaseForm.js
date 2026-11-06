@@ -818,7 +818,7 @@ var BaseForm = BaseView.extend(
 
     $textInputs.prop('readOnly', true);
     $otherInputs.prop('disabled', true);
-    $otherInputs.filter('select').trigger('chosen:updated');
+    $otherInputs.filter('select').trigger('liszt:updated');
 
     this.__savingLock = {
       $textInputs,
@@ -841,7 +841,7 @@ var BaseForm = BaseView.extend(
     this.__savingLock = null;
     lock.$textInputs.prop('readOnly', false);
     lock.$otherInputs.prop('disabled', false);
-    lock.$otherInputs.filter('select').trigger('chosen:updated');
+    lock.$otherInputs.filter('select').trigger('liszt:updated');
     const activeElement = document.activeElement;
 
     if (lock.focused && document.contains(lock.focused) && (!activeElement || activeElement === document.body)) {

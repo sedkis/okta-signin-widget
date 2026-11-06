@@ -156,7 +156,8 @@ const idx = {
   ],
   '/idp/idx/identify': [
     // 'authenticator-verification-data-ov-only-without-device-known',
-    'authenticator-verification-email',
+    'authenticator-verification-password',
+    'error-identify-access-denied',
     // 'authenticator-enroll-select-authenticator',
     // 'authenticator-verification-email-without-emailmagiclink',
     // 'identify-with-only-one-third-party-idp',
@@ -173,7 +174,7 @@ const idx = {
     // 'error-unsupported-idx-response'
   ],
   '/idp/idx/challenge/answer': [
-    'error-401-invalid-otp-passcode',
+    'error-authenticator-verify-password',
     // 'error-401-invalid-otp-passcode',
     // 'error-429-too-many-request-operation-ratelimit',
     // 'error-429-too-many-request',
@@ -183,9 +184,6 @@ const idx = {
     // 'error-authenticator-enroll-security-question',
     // 'error-authenticator-webauthn-failure',
     // 'error-authenticator-enroll-password-common',
-    'error-authenticator-reset-password-requirement',
-    'error-authenticator-enroll-security-question-html-tags',
-    'error-authenticator-enroll-password-common',
     // 'error-authenticator-reset-password-requirement',
     // 'error-authenticator-enroll-security-question-html-tags',
   ],
