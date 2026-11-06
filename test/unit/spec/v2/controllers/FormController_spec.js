@@ -81,3 +81,100 @@ describe('v2/controllers/FormController', () => {
     });
   });
 });
+
+describe('v2/controllers/FormController handleSaveForm configured flow reset', () => {
+  let authClient;
+  let savedMeta;
+  let fakeThis;
+
+  function createModel(formName, json = {}) {
+    return {
+      get: jest.fn((key) => (key === 'formName' ? formName : undefined)),
+      toJSON: jest.fn(() => ({ ...json })),
+      trigger: jest.fn(),
+    };
+  }
+
+  function setup(flow) {
+    let currentFlow = flow;
+    savedMeta = { flow, interactionHandle: 'fake-interaction-handle' };
+    authClient = {
+      idx: {
+        getFlow: jest.fn(() => currentFlow),
+        setFlow: jest.fn((newFlow) => { currentFlow = newFlow; }),
+        getSavedTransactionMeta: jest.fn(() => savedMeta),
+        saveTransactionMeta: jest.fn((meta) => { savedMeta = meta; }),
+        proceed: jest.fn(() => Promise.resolve({ requestDidSucceed: true })),
+      },
+    };
+    const settings = {
+      get: jest.fn(() => undefined),
+      getAuthClient: jest.fn(() => authClient),
+      postRegistrationSubmit: jest.fn((email, onSuccess) => onSuccess()),
+    };
+    fakeThis = {
+      options: {
+        settings,
+        appState: {
+          hasRemediationObject: jest.fn(() => true),
+          get: jest.fn((key) => (key === 'idx' ? { context: { stateHandle: 'fake-state-handle' } } : undefined)),
+        },
+      },
+      settings,
+      toggleFormButtonState: jest.fn(),
+      transformIdentifier: jest.fn((formName, payload) => payload),
+      handleIdxResponse: jest.fn(() => Promise.resolve()),
+      showFormErrors: jest.fn(() => Promise.resolve()),
+    };
+  }
+
+  function callHandler(model) {
+    return FormController.prototype.handleSaveForm.call(fakeThis, model);
+  }
+
+  it('resets the signup flow to default when submitting enroll-profile', async () => {
+    setup('signup');
+    await callHandler(createModel('enroll-profile', { userProfile: { email: 'jane@example.com' } }));
+
+    expect(authClient.idx.setFlow).toHaveBeenCalledWith('default');
+    expect(authClient.idx.saveTransactionMeta).toHaveBeenCalledWith({
+      flow: 'default',
+      interactionHandle: 'fake-interaction-handle',
+    });
+    expect(authClient.idx.proceed).toHaveBeenCalledWith(expect.objectContaining({
+      step: 'enroll-profile',
+      flow: 'default',
+      stateHandle: 'fake-state-handle',
+    }));
+    expect(fakeThis.handleIdxResponse).toHaveBeenCalled();
+  });
+
+  it('does not change the flow when submitting enroll-profile in the default flow', async () => {
+    setup('default');
+    await callHandler(createModel('enroll-profile'));
+
+    expect(authClient.idx.setFlow).not.toHaveBeenCalled();
+    expect(authClient.idx.saveTransactionMeta).not.toHaveBeenCalled();
+    expect(authClient.idx.proceed.mock.calls[0][0]).not.toHaveProperty('flow');
+  });
+
+  it('does not change the signup flow for forms other than enroll-profile', async () => {
+    setup('signup');
+    await callHandler(createModel('select-enroll-profile'));
+
+    expect(authClient.idx.setFlow).not.toHaveBeenCalled();
+    expect(authClient.idx.proceed.mock.calls[0][0]).not.toHaveProperty('flow');
+  });
+
+  it('still resets the resetPassword flow to default when submitting reset-authenticator', async () => {
+    setup('resetPassword');
+    await callHandler(createModel('reset-authenticator'));
+
+    expect(authClient.idx.setFlow).toHaveBeenCalledWith('default');
+    expect(authClient.idx.saveTransactionMeta).toHaveBeenCalledWith(expect.objectContaining({ flow: 'default' }));
+    expect(authClient.idx.proceed).toHaveBeenCalledWith(expect.objectContaining({
+      step: 'reset-authenticator',
+      flow: 'default',
+    }));
+  });
+});
