@@ -81,6 +81,22 @@ describe('v2/ion/errorUtils', function() {
       expect(errorUtils.buildErrorObject(error)).toEqual({ responseJSON: error });
     });
 
+    it.each([
+      'Failed to fetch',
+      'Load failed',
+      'NetworkError when attempting to fetch resource.',
+    ])('shows a network connection error when fetch rejects with "%s"', (errorSummary) => {
+      const error = { name: 'AuthApiError', errorSummary, errorCauses: [] };
+      expect(errorUtils.buildErrorObject(error)).toEqual({
+        responseJSON: { errorSummary: Bundles.login['error.network.connection'] },
+      });
+    });
+
+    it('keeps the server errorSummary when an HTTP response was received', () => {
+      const error = { name: 'AuthApiError', errorSummary: 'Failed to fetch', xhr: { status: 400 } };
+      expect(errorUtils.buildErrorObject(error)).toEqual({ responseJSON: error });
+    });
+
     it('returns an unsupported response error and calls onUnsupportedError for unknown errors', () => {
       const error = { foo: 'bar' };
       const onUnsupportedError = jest.fn();

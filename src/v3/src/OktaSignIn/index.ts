@@ -23,6 +23,7 @@ import {
   RenderResult,
   RenderSuccessCallback,
 } from '../../../types';
+import { withNetworkErrorRetry } from '../../../util/retryNetworkErrors';
 import { Widget } from '../components/Widget';
 import {
   JsonObject,
@@ -133,6 +134,14 @@ export default class OktaSignIn implements OktaSignInAPI {
 
       // instance of OktaAuth client
       this.authClient = new OktaAuth(authParams);
+
+      // Retry IDX requests that fail with a transient network error (e.g. ERR_HTTP2_PROTOCOL_ERROR)
+      // unless the app supplied its own httpRequestClient
+      if (!authParams.httpRequestClient && this.authClient.options?.httpRequestClient) {
+        this.authClient.options.httpRequestClient = withNetworkErrorRetry(
+          this.authClient.options.httpRequestClient,
+        );
+      }
 
       // add widget version to extended user agent header
       // eslint-disable-next-line no-underscore-dangle

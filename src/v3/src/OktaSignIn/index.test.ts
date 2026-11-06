@@ -80,4 +80,38 @@ describe('OktaSignIn', () => {
     })).rejects.toThrow('could not find element #non-existent');
     expect(render).not.toHaveBeenCalled();
   });
+  it('should retry IDX requests that fail with a transient network error', async () => {
+    const widget = new OktaSignIn({ baseUrl: 'https://example.com' });
+    const response = { status: 200, responseText: '{}' };
+    const originalFetch = window.fetch;
+    const headers = new Map([['content-type', 'application/json']]);
+    window.fetch = jest.fn()
+      .mockRejectedValueOnce(new TypeError('Failed to fetch'))
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (key: string) => headers.get(key.toLowerCase()),
+          entries: () => headers.entries(),
+        },
+        json: () => Promise.resolve({}),
+      });
+    try {
+      const result = widget.authClient.options.httpRequestClient!(
+        'POST',
+        'https://example.com/idp/idx/identify',
+        { headers: {} },
+      );
+      await expect(result).resolves.toMatchObject(response);
+      expect(window.fetch).toHaveBeenCalledTimes(2);
+    } finally {
+      window.fetch = originalFetch;
+    }
+  });
+
+  it('should not wrap an httpRequestClient provided via authParams', () => {
+    const httpRequestClient = jest.fn();
+    const widget = new OktaSignIn({ baseUrl: 'https://example.com', authParams: { issuer: 'https://example.com/oauth2/default', httpRequestClient } });
+    expect(widget.authClient.options.httpRequestClient).toBe(httpRequestClient);
+  });
 });
