@@ -13,12 +13,16 @@
 import {
   ButtonElement,
   ButtonType,
+  FieldElement,
   HiddenInputElement,
   IdxStepTransformer,
   TitleElement,
+  UISchemaElement,
 } from '../../types';
 import { getUserInfo, isConfigRecoverFlow, loc } from '../../util';
-import { removeUIElementWithName } from '../utils';
+import { getUIElementWithName, removeUIElementWithName } from '../utils';
+
+const INCORRECT_PASSWORD_KEY = 'incorrectPassword';
 
 export const transformPasswordChallenge: IdxStepTransformer = ({
   formBag,
@@ -34,6 +38,24 @@ export const transformPasswordChallenge: IdxStepTransformer = ({
   if (isConfigRecoverFlow(widgetProps.flow)) {
     uischema.elements = removeUIElementWithName('credentials.passcode', uischema.elements);
     return formBag;
+  }
+
+  // The server reports an incorrect password as a top-level (form) message rather than a
+  // field-level one, so surface it on the password field as well to put it in an invalid state
+  const incorrectPasswordMessages = transaction.messages?.filter(
+    (message) => message.class === 'ERROR' && message.i18n?.key === INCORRECT_PASSWORD_KEY,
+  );
+  const passwordElement = getUIElementWithName(
+    'credentials.passcode',
+    uischema.elements as UISchemaElement[],
+  ) as FieldElement | undefined;
+  // @ts-expect-error OKTA-539834 - messages missing from type
+  const { inputMeta } = passwordElement?.options ?? {};
+  if (incorrectPasswordMessages?.length && inputMeta && !inputMeta.messages?.value?.length) {
+    inputMeta.messages = {
+      type: 'array',
+      value: incorrectPasswordMessages.map((message) => ({ ...message })),
+    };
   }
 
   const titleElement: TitleElement = {
