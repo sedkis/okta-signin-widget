@@ -1,4 +1,5 @@
 import Settings from 'models/Settings';
+import Bundles from 'util/Bundles';
 
 describe('models/Settings', () => {
   let testContext;
@@ -201,6 +202,17 @@ describe('models/Settings', () => {
       const settings = create();
       expect(Object.keys(settings.get('countries')).length).toBeGreaterThan(200);
       expect(settings.get('countryCode')).toBe('US');
+    });
+    it('reflects country names loaded after Settings is created', () => {
+      const settings = create({ supportedCountryCodes: ['US', 'FR'] });
+      expect(settings.get('countries')).toEqual({ FR: 'France', US: 'United States' });
+      const originalCountry = Bundles.country;
+      Bundles.country = { ...originalCountry, US: 'États-Unis' };
+      try {
+        expect(settings.get('countries')).toEqual({ US: 'États-Unis', FR: 'France' });
+      } finally {
+        Bundles.country = originalCountry;
+      }
     });
     it('uses defaultCountryCode when it is valid', () => {
       expect(create({ defaultCountryCode: 'GB' }).get('countryCode')).toBe('GB');

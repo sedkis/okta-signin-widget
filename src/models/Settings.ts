@@ -306,6 +306,8 @@ const derived: Record<string, ModelProperty>  = {
   },
   countries: {
     deps: ['supportedCountryCodes'],
+    // Country names come from the language bundle, which may load after Settings is created.
+    cache: false,
     fn: function(supportedCountryCodes) {
       return CountryUtil.getSupportedCountries(supportedCountryCodes);
     },
