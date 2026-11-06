@@ -61,6 +61,28 @@ fn.getCountryCode = function(){
   return sorted;
 };
 
+// Restricts getCountries() to the given ISO 3166-1 alpha-2 codes (case-insensitive).
+// Returns all countries when no code is given or none of the codes are valid.
+fn.getSupportedCountries = function(supportedCountryCodes) {
+  const countries = fn.getCountries();
+  if (!Array.isArray(supportedCountryCodes) || !supportedCountryCodes.length) {
+    return countries;
+  }
+  const codes = supportedCountryCodes.map(code => String(code).toUpperCase());
+  const supported = _.pick(countries, (name, code) => codes.includes(code));
+  return _.isEmpty(supported) ? countries : supported;
+};
+
+// Returns defaultCountryCode if it is one of the supported countries, else 'US' if supported,
+// else the first supported country.
+fn.getDefaultCountryCode = function(defaultCountryCode, supportedCountryCodes) {
+  const codes = Object.keys(fn.getSupportedCountries(supportedCountryCodes));
+  if (codes.includes(defaultCountryCode)) {
+    return defaultCountryCode;
+  }
+  return codes.includes('US') ? 'US' : codes[0];
+};
+
 fn.getCallingCodeForCountry = function(countryCode) {
   return countryCallingCodes[countryCode];
 };

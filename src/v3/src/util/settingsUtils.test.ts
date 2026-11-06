@@ -17,7 +17,8 @@ import { WidgetProps } from '../types';
 import {
   getBackToSignInUri, getCustomHelpLinks, getDefaultCountryCode, getFactorPageCustomLink,
   getForgotPasswordUri, getGracePeriodRequiredSoonCustomLink,
-  getHelpLink, getLanguageCode, getPageTitle, getUnlockAccountUri,
+  getHelpLink, getLanguageCode, getPageTitle, getSupportedCountries,
+  getUnlockAccountUri,
   transformIdentifier,
 } from './settingsUtils';
 
@@ -71,6 +72,42 @@ describe('Settings Utils Tests', () => {
     widgetProps.defaultCountryCode = 'BW';
 
     expect(getDefaultCountryCode(widgetProps)).toBe('BW');
+  });
+
+  it('should return all countries when supportedCountryCodes is not provided', () => {
+    expect(Object.keys(getSupportedCountries(widgetProps)).length).toBeGreaterThan(200);
+  });
+
+  it('should only return the valid countries in supportedCountryCodes', () => {
+    widgetProps.supportedCountryCodes = ['us', 'CA', 'ABDC'];
+
+    expect(Object.keys(getSupportedCountries(widgetProps))).toEqual(['CA', 'US']);
+  });
+
+  it('should return all countries when none of supportedCountryCodes are valid', () => {
+    widgetProps.supportedCountryCodes = ['ABDC'];
+
+    expect(Object.keys(getSupportedCountries(widgetProps)).length).toBeGreaterThan(200);
+  });
+
+  it('should return org provided default country code when it is supported', () => {
+    widgetProps.supportedCountryCodes = ['US', 'BW'];
+    widgetProps.defaultCountryCode = 'BW';
+
+    expect(getDefaultCountryCode(widgetProps)).toBe('BW');
+  });
+
+  it('should return "US" as the default country code when org provided value is not supported', () => {
+    widgetProps.supportedCountryCodes = ['US', 'CA'];
+    widgetProps.defaultCountryCode = 'BW';
+
+    expect(getDefaultCountryCode(widgetProps)).toBe('US');
+  });
+
+  it('should return the first supported country when neither default country code nor "US" is supported', () => {
+    widgetProps.supportedCountryCodes = ['GB', 'FR'];
+
+    expect(getDefaultCountryCode(widgetProps)).toBe('FR');
   });
 
   it('should not modify identifier if transform function is not defined', () => {

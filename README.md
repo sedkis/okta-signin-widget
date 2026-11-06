@@ -103,6 +103,7 @@ See the [Usage Guide](#usage-guide) for more information on how to get started u
     - [Supported languages](#supported-languages)
     - [language](#language)
     - [defaultCountryCode](#defaultcountrycode)
+    - [supportedCountryCodes](#supportedcountrycodes)
     - [i18n](#i18n)
   - [assets](#assets)
     - [assets.baseUrl](#assetsbaseurl)
@@ -988,6 +989,17 @@ language: (supportedLanguages, userLanguages) => {
 #### defaultCountryCode
 
 Set the default countryCode of the widget. If no `defaultCountryCode` is provided, defaults to `US`. It sets the country calling code for phone number accordingly in the widget.
+
+#### supportedCountryCodes
+
+Restrict the countries shown in the country dropdown when a user enrolls a phone number (Phone authenticator, and the SMS channel of Okta Verify enrollment) to the given list of [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country codes. Use this to match the countries supported by your telephony provider so users can't pick an unsupported country. Codes are case-insensitive and invalid codes are ignored. If not provided, empty, or none of the codes are valid, all countries are shown.
+
+If `defaultCountryCode` is not one of the supported countries, `US` is selected when it is supported, otherwise the first supported country (in alphabetical order).
+
+```javascript
+supportedCountryCodes: ['US', 'CA', 'MX'],
+defaultCountryCode: 'CA'
+```
 
 #### i18n
 

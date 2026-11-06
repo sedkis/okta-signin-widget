@@ -103,6 +103,40 @@ describe('PhoneAuthenticator tests', () => {
     });
   });
 
+  it('should only render the countries in supportedCountryCodes', async () => {
+    widgetProps = { supportedCountryCodes: ['US', 'ca', 'MX', 'INVALID'] };
+    mockData = { 'authenticator.methodType': 'sms' };
+    props = getComponentProps();
+    const { findByLabelText } = setup(<PhoneAuthenticatorControl {...props} />);
+
+    const countrySelect = await findByLabelText('Country/region') as HTMLSelectElement;
+    const countryCodes = Array.from(countrySelect.options).map((option) => option.value);
+
+    expect(countryCodes).toEqual(['CA', 'MX', 'US']);
+    expect(countrySelect.value).toBe('US');
+  });
+
+  it('should select the first supported country and use its calling code when US and defaultCountryCode are not supported', async () => {
+    widgetProps = { supportedCountryCodes: ['GB', 'FR'], defaultCountryCode: 'DE' };
+    mockData = { 'authenticator.methodType': 'sms' };
+    props = getComponentProps();
+    const { findByLabelText, user } = setup(<PhoneAuthenticatorControl {...props} />);
+
+    const countrySelect = await findByLabelText('Country/region') as HTMLSelectElement;
+    const phoneInput = await findByLabelText(/Phone number/);
+
+    expect(countrySelect.value).toBe('FR');
+    await user.type(phoneInput, '612345678');
+    await waitFor(() => {
+      expect(mockHandleFunction).lastCalledWith('+33612345678');
+    });
+
+    await user.selectOptions(countrySelect, 'GB');
+    await waitFor(() => {
+      expect(mockHandleFunction).lastCalledWith('+44612345678');
+    });
+  });
+
   it('should display disabled fields when there is a pending request for SMS methodType', async () => {
     mockData = { 'authenticator.methodType': 'sms' };
     mockLoading.mockReturnValue(true);

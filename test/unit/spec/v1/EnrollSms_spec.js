@@ -34,6 +34,7 @@ Expect.describe('EnrollSms', function() {
       baseUrl: baseUrl,
       authClient: authClient,
       defaultCountryCode: routerOptions.defaultCountryCode,
+      supportedCountryCodes: routerOptions.supportedCountryCodes,
       'features.router': startRouter,
     });
 
@@ -236,6 +237,19 @@ Expect.describe('EnrollSms', function() {
         })
         .then(function(test) {
           expect(test.form.selectedCountry()).toBe('United Kingdom');
+        });
+    });
+    itp('only lists the countries in settings.supportedCountryCodes', function() {
+      return setup(allFactorsRes, undefined, { supportedCountryCodes: ['GB', 'FR'] })
+        .then(function(test) {
+          return Expect.wait(function() {
+            return test.form.hasCountriesList();
+          }, test);
+        })
+        .then(function(test) {
+          const countries = test.form.$('select[name="countryCode"] option').toArray().map(o => o.value);
+          expect(countries).toEqual(['FR', 'GB']);
+          expect(test.form.selectedCountry()).toBe('France');
         });
     });
     itp('uses "US" as countryCode if settings.defaultCountryCode is not valid', function() {

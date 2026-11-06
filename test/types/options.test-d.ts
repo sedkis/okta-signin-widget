@@ -40,6 +40,8 @@ const signIn2 = new OktaSignIn({
   logoText: 'logo text',
   helpSupportNumber: '(123) 456-7890',
   brandName: 'Spaghetti Inc.',
+  defaultCountryCode: 'CA',
+  supportedCountryCodes: ['US', 'CA'],
   language: 'en',
   i18n: {
     en: {

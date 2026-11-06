@@ -113,6 +113,7 @@ const local: Record<string, ModelProperty> = {
   'features.disableAutocomplete': ['boolean', false, false],
 
   defaultCountryCode: ['string', false, 'US'],
+  supportedCountryCodes: ['array', false],
 
   // I18N
   language: ['any', false], // Can be a string or a function
@@ -298,11 +299,17 @@ const derived: Record<string, ModelProperty>  = {
     fn: getLanguageTags,
   },
   countryCode: {
-    deps: ['defaultCountryCode'],
-    fn: function(defaultCountryCode) {
-      const countries = CountryUtil.getCountries();
-      return Object.keys(countries).includes(defaultCountryCode)
-        ? defaultCountryCode : 'US';
+    deps: ['defaultCountryCode', 'supportedCountryCodes'],
+    fn: function(defaultCountryCode, supportedCountryCodes) {
+      return CountryUtil.getDefaultCountryCode(defaultCountryCode, supportedCountryCodes);
+    },
+  },
+  countries: {
+    deps: ['supportedCountryCodes'],
+    // Country names come from the language bundle, which may load after Settings is created.
+    cache: false,
+    fn: function(supportedCountryCodes) {
+      return CountryUtil.getSupportedCountries(supportedCountryCodes);
     },
   },
   mode: {

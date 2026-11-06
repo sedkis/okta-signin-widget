@@ -165,15 +165,14 @@ export const getFactorPageCustomLink = (widgetProps: WidgetProps): Omit<CustomLi
   return typeof factorPage !== 'undefined' && 'href' in factorPage ? factorPage : undefined;
 };
 
+export const getSupportedCountries = (widgetProps: WidgetProps): Record<string, string> => {
+  const { supportedCountryCodes } = widgetProps;
+  return CountryUtil.getSupportedCountries(supportedCountryCodes) as Record<string, string>;
+};
+
 export const getDefaultCountryCode = (widgetProps: WidgetProps): string => {
-  const defaultCountry = 'US';
-  const { defaultCountryCode } = widgetProps;
-  if (typeof defaultCountryCode === 'undefined') {
-    return defaultCountry;
-  }
-  const countries = CountryUtil.getCountries();
-  return Object.keys(countries).includes(defaultCountryCode)
-    ? defaultCountryCode : defaultCountry;
+  const { defaultCountryCode, supportedCountryCodes } = widgetProps;
+  return CountryUtil.getDefaultCountryCode(defaultCountryCode, supportedCountryCodes);
 };
 
 export const parseRegistrationSchema = (

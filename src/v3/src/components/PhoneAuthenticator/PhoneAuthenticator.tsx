@@ -30,7 +30,12 @@ import {
   UISchemaElementComponent,
   UISchemaElementComponentWithValidationProps,
 } from '../../types';
-import { buildFieldLevelErrorMessages, getDefaultCountryCode, getTranslation } from '../../util';
+import {
+  buildFieldLevelErrorMessages,
+  getDefaultCountryCode,
+  getSupportedCountries,
+  getTranslation,
+} from '../../util';
 import { withFormValidationState } from '../hocs';
 
 const PhoneAuthenticator: UISchemaElementComponent<UISchemaElementComponentWithValidationProps> = ({
@@ -64,7 +69,7 @@ const PhoneAuthenticator: UISchemaElementComponent<UISchemaElementComponentWithV
   const countryLabel = getTranslation(translations, 'country');
 
   const { features: { disableAutocomplete } = {} } = widgetProps;
-  const countries = CountryUtil.getCountries() as Record<string, string>;
+  const countries = getSupportedCountries(widgetProps);
   const [phone, setPhone] = useState<string>('');
   // Sets the default country code
   const defaultCountryCode = getDefaultCountryCode(widgetProps);
