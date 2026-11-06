@@ -100,7 +100,14 @@ module.exports = function(grunt) {
             expand: true,
             cwd: 'target/css',
             // copy minified stylesheet and its sourcemap only
-            src: ['*.css', '*.css.map', '!okta-sign-in.css', '!okta-sign-in.css.map'],
+            src: [
+              '*.css',
+              '*.css.map',
+              '!okta-sign-in.css',
+              '!okta-sign-in.css.map',
+              // Gen3 release css map is hidden (see src/v3/webpack.release.config.ts), so it is not published either
+              ...(PUBLIC_SOURCEMAPS ? [] : ['!okta-sign-in.next.css.map']),
+            ],
             dest: DIST + '/css',
           },
           {
