@@ -12,6 +12,15 @@
 
 import { loc } from '@okta/courage';
 import IonResponseHelper from './IonResponseHelper';
+import { isNetworkErrorMessage } from 'util/retryNetworkErrors';
+
+/**
+ * auth-js wraps a rejected `fetch` (no HTTP response received) in an AuthApiError
+ * without an xhr, whose errorSummary is the raw browser message, e.g. "Failed to fetch".
+ */
+const isNetworkError = (error) => {
+  return !error.xhr && !error.errorCode && isNetworkErrorMessage(error.errorSummary);
+};
 
 /**
  * Build a normalized error object from various error shapes
@@ -34,6 +43,8 @@ const buildErrorObject = (error, onUnsupportedError) => {
         errorSummaryKeys: IonResponseHelper.getGlobalErrorKeys(error),
       },
     };
+  } else if (isNetworkError(error)) {
+    return { responseJSON: { errorSummary: loc('error.network.connection', 'login') } };
   } else if (error.errorSummary) {
     return { responseJSON: error };
   } else {

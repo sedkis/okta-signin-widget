@@ -1,5 +1,6 @@
 import { ConfigError } from 'util/Errors';
 import Util from 'util/Util';
+import { withNetworkErrorRetry } from 'util/retryNetworkErrors';
 import config from 'config/config.json';
 import { WidgetOptions, WidgetOktaAuthConstructor, WidgetOktaAuthInterface } from 'types';
 
@@ -44,6 +45,12 @@ export default function getAuthClientInstance(
     }
 
     authClient = new OktaAuth(authParams);
+
+    // Retry IDX requests that fail with a transient network error (e.g. ERR_HTTP2_PROTOCOL_ERROR)
+    // unless the app supplied its own httpRequestClient
+    if (!authParams.httpRequestClient && authClient.options?.httpRequestClient) {
+      authClient.options.httpRequestClient = withNetworkErrorRetry(authClient.options.httpRequestClient);
+    }
   }
 
   // Add widget version to extended user agent header
