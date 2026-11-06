@@ -111,7 +111,7 @@ describe('OktaSignIn', () => {
 
   it('should not wrap an httpRequestClient provided via authParams', () => {
     const httpRequestClient = jest.fn();
-    const widget = new OktaSignIn({ baseUrl: 'https://example.com', authParams: { httpRequestClient } });
+    const widget = new OktaSignIn({ baseUrl: 'https://example.com', authParams: { issuer: 'https://example.com/oauth2/default', httpRequestClient } });
     expect(widget.authClient.options.httpRequestClient).toBe(httpRequestClient);
   });
 });

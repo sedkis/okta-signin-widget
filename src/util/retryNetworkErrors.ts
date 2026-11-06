@@ -55,7 +55,7 @@ export function withNetworkErrorRetry(
   maxRetries = MAX_NETWORK_ERROR_RETRIES,
 ): HttpRequestClient {
   return (method, url, options) => {
-    const attempt = (retryCount: number) => httpRequestClient(method, url, options)
+    const attempt = (retryCount: number): ReturnType<HttpRequestClient> => httpRequestClient(method, url, options)
       .catch(async (error) => {
         if (retryCount >= maxRetries || !isIdxRequest(url) || !isTransientNetworkError(error)) {
           throw error;
