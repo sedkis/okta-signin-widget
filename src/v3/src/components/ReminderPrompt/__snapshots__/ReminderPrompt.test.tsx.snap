@@ -52,16 +52,17 @@ exports[`ReminderPrompt should show prompt with working link after default timeo
               class="MuiBox-root emotion-0"
             >
               <div
-                class="MuiBox-root emotion-8"
+                class="MuiBox-root emotion-0"
               >
                 Didnt receive the email?
+                 
+                <a
+                  class="MuiTypography-root MuiTypography-monochrome MuiLink-root MuiLink-underlineAlways emotion-9"
+                  href="#"
+                >
+                  Send again?
+                </a>
               </div>
-              <a
-                class="MuiTypography-root MuiTypography-monochrome MuiLink-root MuiLink-underlineAlways emotion-9"
-                href="#"
-              >
-                Send again?
-              </a>
             </div>
           </div>
         </div>
@@ -115,13 +116,17 @@ exports[`ReminderPrompt should show prompt with working link after default timeo
               <div
                 class="MuiBox-root emotion-0"
               >
-                Didn't receive the email? Click 
-                <a
-                  class="MuiTypography-root MuiTypography-monochrome MuiLink-root MuiLink-underlineAlways send-again emotion-9"
-                  href="#"
+                <div
+                  class="MuiBox-root emotion-0"
                 >
-                  send again
-                </a>
+                  Didn't receive the email? Click 
+                  <a
+                    class="MuiTypography-root MuiTypography-monochrome MuiLink-root MuiLink-underlineAlways send-again emotion-10"
+                    href="#"
+                  >
+                    send again
+                  </a>
+                </div>
               </div>
             </div>
           </div>

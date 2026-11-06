@@ -66,7 +66,9 @@ describe('ReminderPrompt', () => {
       },
     };
 
-    const { container, queryByText, findByText } = render(<ReminderPrompt {...props} />);
+    const {
+      container, getByText, queryByText, findByText,
+    } = render(<ReminderPrompt {...props} />);
 
     expect(queryByText('Send again?')).not.toBeInTheDocument();
     act(() => {
@@ -80,6 +82,8 @@ describe('ReminderPrompt', () => {
     const sendAgainLink = await findByText('Send again?');
 
     expect(container).toMatchSnapshot();
+    // content and action link are rendered inline within the same container
+    expect(getByText('Didnt receive the email?')).toContainElement(sendAgainLink);
 
     expect(mockSubmitHook).not.toHaveBeenCalled();
     fireEvent.click(sendAgainLink);

@@ -395,16 +395,17 @@ exports[`Email authenticator verification when email magic link = undefined rend
                                     class="MuiBox-root emotion-2"
                                   >
                                     <div
-                                      class="MuiBox-root emotion-31"
+                                      class="MuiBox-root emotion-2"
                                     >
                                       Haven't received an email?
+                                       
+                                      <a
+                                        class="MuiTypography-root MuiTypography-monochrome MuiLink-root MuiLink-underlineAlways emotion-32"
+                                        href="#"
+                                      >
+                                        Send again
+                                      </a>
                                     </div>
-                                    <a
-                                      class="MuiTypography-root MuiTypography-monochrome MuiLink-root MuiLink-underlineAlways emotion-32"
-                                      href="#"
-                                    >
-                                      Send again
-                                    </a>
                                   </div>
                                 </div>
                               </div>
@@ -1258,16 +1259,17 @@ exports[`Email authenticator verification when email magic link = undefined rend
                                     class="MuiBox-root emotion-2"
                                   >
                                     <div
-                                      class="MuiBox-root emotion-38"
+                                      class="MuiBox-root emotion-2"
                                     >
                                       Haven't received an email?
+                                       
+                                      <a
+                                        class="MuiTypography-root MuiTypography-monochrome MuiLink-root MuiLink-underlineAlways emotion-39"
+                                        href="#"
+                                      >
+                                        Send again
+                                      </a>
                                     </div>
-                                    <a
-                                      class="MuiTypography-root MuiTypography-monochrome MuiLink-root MuiLink-underlineAlways emotion-39"
-                                      href="#"
-                                    >
-                                      Send again
-                                    </a>
                                   </div>
                                 </div>
                               </div>
